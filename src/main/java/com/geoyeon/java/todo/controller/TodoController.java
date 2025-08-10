@@ -1,5 +1,7 @@
 package com.geoyeon.java.todo.controller;
 
+import com.geoyeon.java.todo.common.ErrorCode;
+import com.geoyeon.java.todo.common.TodoException;
 import com.geoyeon.java.todo.domain.Todo;
 import com.geoyeon.java.todo.dto.TodoCreateRequest;
 import com.geoyeon.java.todo.dto.TodoUpdateRequest;
@@ -42,25 +44,20 @@ public class TodoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Optional<Todo>> getTodo(@PathVariable("id") String id) {
+    public ResponseEntity<Todo> getTodo(@PathVariable("id") String id) {
         log.info("Get : Todo Id - {}", id);
 
-        Optional<Todo> todo = this.todoService.getTodo(id);
+        Todo todo = this.todoService.getTodo(id).orElseThrow(() -> new TodoException(ErrorCode.NOT_FOUND_TODO) );
 
         return ResponseEntity.ok().body(todo);
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<String> updateTodo(@PathVariable("id") String id, @RequestBody @Valid TodoUpdateRequest request) {
+    public ResponseEntity<Void> updateTodo(@PathVariable("id") String id, @RequestBody @Valid TodoUpdateRequest request) {
         log.info("Update : todo : {}", request.toString());
 
-        try {
             boolean result = this.todoService.updateTodo(id, request);
 
-            return ResponseEntity.ok().body("true");
-        } catch (Exception e) {
-            log.info("error - {}", e.toString());
-            return ResponseEntity.ok().body("fail");
-        }
+            return ResponseEntity.noContent().build();
     }
 }

@@ -66,10 +66,9 @@ public class TodoService {
 
             this.todoRepository.save(todo);
         },
-                () -> {
-                    throw new IllegalStateException("Value not found");
-
-                });
+            () -> {
+                throw new IllegalStateException("Value not found");
+            });
 
         return true;
     }
