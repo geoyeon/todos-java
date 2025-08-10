@@ -1,9 +1,6 @@
 package com.geoyeon.java.todo.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -16,6 +13,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class Todo {
     @Id
     private String id;
@@ -27,6 +25,8 @@ public class Todo {
     private LocalDateTime startDate;
 
     private LocalDateTime endDate;
+
+    private boolean isCompleted = false;
 
     @CreatedDate
     private LocalDateTime createdAt;
