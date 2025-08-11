@@ -4,6 +4,7 @@ import com.geoyeon.java.todo.common.ErrorCode;
 import com.geoyeon.java.todo.common.TodoException;
 import com.geoyeon.java.todo.domain.Todo;
 import com.geoyeon.java.todo.dto.TodoCreateRequest;
+import com.geoyeon.java.todo.dto.TodoListResponse;
 import com.geoyeon.java.todo.dto.TodoUpdateRequest;
 import com.geoyeon.java.todo.service.TodoService;
 import jakarta.validation.Valid;
@@ -35,12 +36,15 @@ public class TodoController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<Todo>> getTodos() {
+    public ResponseEntity<TodoListResponse> getTodos(@RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "isComplete", required = false) Boolean isComplete, @RequestParam(value = "search", required = false) String search) {
         log.info("Get : List");
 
-        List<Todo> todos = this.todoService.getTodos();
+        if (page == null) page = 1;
 
-        return ResponseEntity.ok().body(todos);
+
+        TodoListResponse result = this.todoService.getTodos(page, isComplete, search);
+
+        return ResponseEntity.ok().body(result);
     }
 
     @GetMapping("/{id}")

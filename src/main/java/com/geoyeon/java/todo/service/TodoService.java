@@ -2,13 +2,19 @@ package com.geoyeon.java.todo.service;
 
 import com.geoyeon.java.todo.domain.Todo;
 import com.geoyeon.java.todo.dto.TodoCreateRequest;
+import com.geoyeon.java.todo.dto.TodoListResponse;
 import com.geoyeon.java.todo.dto.TodoUpdateRequest;
 import com.geoyeon.java.todo.repository.TodoRepository;
+import com.geoyeon.java.todo.repository.TodoRepositoryCustom;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Sort;
+import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +23,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class TodoService {
     private final TodoRepository todoRepository;
+    private final TodoRepositoryCustom todoRepositoryCustom;
 
     public Todo createTodo(TodoCreateRequest request) {
         Todo todo = new Todo();
@@ -28,13 +35,37 @@ public class TodoService {
         return this.todoRepository.save(todo);
     }
 
-    public List<Todo> getTodos() {
-        Sort sort = Sort.by(Sort.Direction.DESC, "id");
-        return this.todoRepository.findAll(sort);
+    public TodoListResponse getTodos(int page, Boolean isComplete, String search) {
+        Query query = new Query();
+
+        int limit = 10;
+        int skip = (page - 1) * limit;
+
+        query.skip(skip);
+        query.limit(limit);
+
+        if (isComplete != null) {
+            if (isComplete) query.addCriteria(Criteria.where("isComplete").is(isComplete));
+        }
+
+        if (search != null && !search.isBlank()) {
+            List<Criteria> orSearchCondition = new ArrayList<>();
+            orSearchCondition.add(Criteria.where("title").regex(search, "i"));
+            orSearchCondition.add(Criteria.where("memo").regex(search, "i"));
+            query.addCriteria(new Criteria().orOperator(orSearchCondition));
+        }
+
+        log.info("query : {}", query);
+
+        long totalCount = (isComplete == null && search == null) ? this.todoRepositoryCustom.totalCount() : this.todoRepositoryCustom.countWithCondition(query);
+
+        List<Todo> list = this.todoRepositoryCustom.findByWherePaginationWithQuerydsl(query);
+
+        return TodoListResponse.builder().list(list).totalCount(totalCount).build();
     }
 
     public Optional<Todo> getTodo(String id) {
-        return this.todoRepository.findById(id);
+        return this.todoRepository.findById(new ObjectId(id));
     }
 
     public boolean updateTodo(String id, TodoUpdateRequest request) {

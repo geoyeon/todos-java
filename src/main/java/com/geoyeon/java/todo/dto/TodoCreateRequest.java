@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Setter
 public class TodoCreateRequest {
     @NotBlank(message = "제목은 필수입니다.")
-    @Min(value = 3, message = "제목은 3자이상 필수입니다.")
+//    @Min(value = 3, message = "제목은 3자이상 필수입니다.")
     private String title;
 
     private String memo;
