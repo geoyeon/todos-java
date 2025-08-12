@@ -1,5 +1,7 @@
 package com.geoyeon.java.todo.service;
 
+import com.geoyeon.java.todo.common.ErrorCode;
+import com.geoyeon.java.todo.common.TodoException;
 import com.geoyeon.java.todo.domain.Todo;
 import com.geoyeon.java.todo.dto.TodoCreateRequest;
 import com.geoyeon.java.todo.dto.TodoListResponse;
@@ -12,6 +14,7 @@ import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,6 +71,8 @@ public class TodoService {
         return this.todoRepository.findById(new ObjectId(id));
     }
 
+    // 트랜잭션 테스트 용도
+    @Transactional
     public boolean updateTodo(String id, TodoUpdateRequest request) {
         Optional<Todo> originalTodo = this.getTodo(id);
 
@@ -98,7 +103,7 @@ public class TodoService {
             this.todoRepository.save(todo);
         },
             () -> {
-                throw new IllegalStateException("Value not found");
+                throw new TodoException(ErrorCode.NOT_FOUND_TODO);
             });
 
         return true;
